@@ -12,3 +12,11 @@ dist
 *.log
 CMakeLists.txt
 dask-worker-space
+
+# 虚拟环境
+mars_env/
+venv/
+env/
+
+# 训练输出（太大，不推送）
+# archive/
