@@ -107,7 +107,29 @@ class DetectionLoss(object):
         gtLabels, gtBboxes = targets.split((1, 4), 2)  # cls=(batchSize, maxCount, 1), xyxy=(batchSize, maxCount, 4)
         gtMask = gtBboxes.sum(2, keepdim=True).gt_(0.0)
 
-        raise NotImplementedError("DetectionLoss::__call__")
+        # anchor points generation
+        anchors, strides = self.model.makeAnchors(preds)  # anchors: (num_anchors, 2), strides: (num_anchors, 1)
+        
+        # bbox decode
+        predBboxes = bboxDecode(anchors, predBoxDistribution, self.model.proj, xywh=False)  # (batchSize, num_anchors, 4)
+        
+        # assign targets
+        _, targetBboxes, targetScores, fg_mask, _ = self.assigner(
+            predClassScores.detach().sigmoid(), predBboxes.detach() * strides, anchors * strides,
+            gtLabels, gtBboxes, gtMask
+        )
+        
+        # compute losses
+        targetScoresSum = max(targetScores.sum(), 1)
+        
+        # classification loss (BCE)
+        loss[1] = self.bce(predClassScores, targetScores.to(predClassScores.dtype)).sum() / targetScoresSum
+        
+        # bbox regression loss (IoU + DFL)
+        if fg_mask.sum():
+            targetBboxes /= strides
+            loss[0], loss[2] = self.bboxLoss(predBoxDistribution, predBboxes, anchors, targetBboxes, 
+                                           targetScores, targetScoresSum, fg_mask)
 
         loss[0] *= self.mcfg.lossWeights[0]  # box
         loss[1] *= self.mcfg.lossWeights[1]  # cls

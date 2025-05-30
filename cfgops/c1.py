@@ -13,15 +13,15 @@ def mcfg(tags):
     mcfg.validationSplitName = "validation" # DO NOT MODIFY
     mcfg.testSplitName = "test" # DO NOT MODIFY
 
-    # data setup
-    mcfg.imageDir = "/auto/cvdata/mar20/images"
-    mcfg.annotationDir = "/auto/cvdata/mar20/annotations"
+    # data setup - 使用项目中archive文件夹的数据集
+    mcfg.imageDir = "archive/mar20/images"
+    mcfg.annotationDir = "archive/mar20/annotations"
     mcfg.classList = ["A{}".format(x) for x in range(1, 21)] # DO NOT MODIFY
     mcfg.subsetMap = { # DO NOT MODIFY
-        "train": "/auto/cvdata/mar20/splits/v5/train.txt",
-        "validation": "/auto/cvdata/mar20/splits/v5/validation.txt",
-        "test": "/auto/cvdata/mar20/splits/v5/test.txt",
-        "small": "/auto/cvdata/mar20/splits/v5/small.txt",
+        "train": "archive/mar20/splits/v5/train.txt",
+        "validation": "archive/mar20/splits/v5/validation.txt",
+        "test": "archive/mar20/splits/v5/test.txt",
+        "small": "archive/mar20/splits/v5/small.txt",
     }
 
     if "full" in tags:
@@ -37,8 +37,8 @@ def mcfg(tags):
 
     if "distillation" in tags:
         mcfg.modelName = "distillation"
-        mcfg.checkpointModelFile = "/auto/mars/ame/c1.nano.teacher/__cache__/best_weights.pth"
-        mcfg.teacherModelFile = "/auto/mars/ame/c1.nano.teacher/__cache__/best_weights.pth"
+        mcfg.checkpointModelFile = "C:/Mars_Output/ame/c1.nano.teacher/__cache__/best_weights.pth"
+        mcfg.teacherModelFile = "C:/Mars_Output/ame/c1.nano.teacher/__cache__/best_weights.pth"
         mcfg.distilLossWeights = (1.0, 0.05, 0.001)
         mcfg.maxEpoch = 100
         mcfg.backboneFreezeEpochs = [x for x in range(0, 25)]

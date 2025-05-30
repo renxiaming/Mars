@@ -16,7 +16,7 @@ class ModelConfig(object):
         self.annotationDir = None
         self.classList = None
         self.subsetMap = {}
-        self.dcore = 10
+        self.dcore = 0
         self.suffix = ".jpg"
 
         # model setup
@@ -85,7 +85,11 @@ class ModelConfig(object):
 
         self.user = os.getenv("USER")
         if self.user is None or len(self.user) == 0:
+            # 在Windows系统上尝试USERNAME环境变量
+            self.user = os.getenv("USERNAME")
+        if self.user is None or len(self.user) == 0:
             raise ValueError("User not found")
+        self.user = self.user.strip().replace(' ', '_')
         if self.root is None:
             raise ValueError("Root not set")
         if self.mode is None:
@@ -128,15 +132,15 @@ class ModelConfig(object):
         return self
 
     def cacheDir(self):
-        dirpath = os.path.join(self.root, self.user, self.cfgname, "__cache__")
+        dirpath = os.path.join(self.root, self.user, self.cfgname, "__cache__").replace('\\', '/')
         if not os.path.exists(dirpath):
-            os.makedirs(dirpath)
+            os.makedirs(dirpath, exist_ok=True)
         return dirpath
 
     def downloadDir(self):
-        dirpath = os.path.join(self.root, self.user, self.cfgname, "__download__")
+        dirpath = os.path.join(self.root, self.user, self.cfgname, "__download__").replace('\\', '/')
         if not os.path.exists(dirpath):
-            os.makedirs(dirpath)
+            os.makedirs(dirpath, exist_ok=True)
         return dirpath
 
     def evalDir(self):

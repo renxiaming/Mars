@@ -77,10 +77,16 @@ class YoloModel(nn.Module):
         return self
 
     def freezeBackbone(self):
-        raise NotImplementedError("YoloModel::freezeBackbone")
+        """冻结backbone网络的参数"""
+        for param in self.backbone.parameters():
+            param.requires_grad = False
+        log.inf("Backbone frozen")
 
     def unfreezeBackbone(self):
-        raise NotImplementedError("YoloModel::unfreezeBackbone")
+        """解冻backbone网络的参数"""
+        for param in self.backbone.parameters():
+            param.requires_grad = True
+        log.inf("Backbone unfrozen")
 
     def forward(self, x):
         if self.inferenceMode:
@@ -100,6 +106,10 @@ class YoloModel(nn.Module):
         _, X, Y, Z = self.neck.forward(feat1, feat2, feat3)
         xo, yo, zo = self.head.forward(X, Y, Z)
         return xo, yo, zo
+
+    def makeAnchors(self, preds):
+        """生成anchor points和strides"""
+        return self.anchorPoints, self.anchorStrides
 
     def save(self, modelFile, verbose=False):
         torch.save(self.state_dict(), modelFile)
