@@ -19,4 +19,4 @@ venv/
 env/
 
 # 训练输出（太大，不推送）
-# archive/
+archive/
