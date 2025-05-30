@@ -16,7 +16,7 @@ class ModelConfig(object):
         self.annotationDir = None
         self.classList = None
         self.subsetMap = {}
-        self.dcore = 0
+        self.dcore = 10  # 使用10个CPU核心进行数据加载
         self.suffix = ".jpg"
 
         # model setup
