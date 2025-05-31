@@ -24,16 +24,22 @@ def mcfg(tags):
         "small": "archive/mar20/splits/v5/small.txt",
     }
 
-    # 启用预训练权重
-    mcfg.pretrainedBackboneUrl = "https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt"
+    # 根据backbone类型设置预训练权重
+    if "swin" in tags:
+        # Swin-Transformer不使用YOLO预训练权重
+        mcfg.pretrainedBackboneUrl = None
+        mcfg.modelName = "swin"  # 使用Swin模型
+        mcfg.batchSize = 6  # Swin-Transformer内存需求更高
+    else:
+        # 启用YOLO预训练权重
+        mcfg.pretrainedBackboneUrl = "https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt"
+        mcfg.modelName = "base"
 
     if "full" in tags:
-        mcfg.modelName = "base"
         mcfg.maxEpoch = 200
         mcfg.backboneFreezeEpochs = [x for x in range(0, 100)]
 
     if "teacher" in tags:
-        mcfg.modelName = "base"
         mcfg.maxEpoch = 200
         mcfg.backboneFreezeEpochs = [x for x in range(0, 100)]
         mcfg.trainSelectedClasses = ["A{}".format(x) for x in range(1, 11)] # DO NOT MODIFY
@@ -42,9 +48,17 @@ def mcfg(tags):
         # 动态获取用户名，兼容Windows和Linux
         username = os.environ.get('USERNAME') or os.environ.get('USER', 'root')
         
-        mcfg.modelName = "distillation"
-        mcfg.checkpointModelFile = f"C:/Mars_Output/{username}/c1.nano.teacher/__cache__/best_weights.pth"
-        mcfg.teacherModelFile = f"C:/Mars_Output/{username}/c1.nano.teacher/__cache__/best_weights.pth"
+        if "swin" in tags:
+            # Swin-Transformer蒸馏模式
+            mcfg.modelName = "swin"  # 学生模型也用Swin
+            mcfg.checkpointModelFile = f"C:/Mars_Output/{username}/c1.nano.swin.teacher/__cache__/best_weights.pth"
+            mcfg.teacherModelFile = f"C:/Mars_Output/{username}/c1.nano.swin.teacher/__cache__/best_weights.pth"
+        else:
+            # 原始蒸馏模式
+            mcfg.modelName = "distillation"
+            mcfg.checkpointModelFile = f"C:/Mars_Output/{username}/c1.nano.teacher/__cache__/best_weights.pth"
+            mcfg.teacherModelFile = f"C:/Mars_Output/{username}/c1.nano.teacher/__cache__/best_weights.pth"
+            
         mcfg.distilLossWeights = (1.0, 0.05, 0.001)
         mcfg.maxEpoch = 100
         mcfg.backboneFreezeEpochs = [x for x in range(0, 25)]

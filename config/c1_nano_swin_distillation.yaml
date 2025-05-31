@@ -1,0 +1,63 @@
+# Swin-Transformer YOLO Configuration - DISTILLATION Mode
+# Student model learns from teacher model
+
+# Model Configuration
+modelName: "swin"  # 使用Swin-Transformer模型
+phase: "nano"
+nc: 1  # number of classes (will be set by cfgops)
+device: "cuda"
+inputShape: [640, 640, 3]
+regMax: 16
+
+# Training Configuration - Distillation training
+epochs: 100  # 蒸馏训练轮次较少
+batchSize: 6  # 由于Swin-Transformer内存需求更高，使用较小batch size
+learningRate: 0.01  # 标准学习率
+momentum: 0.937
+weightDecay: 0.0005
+warmupEpochs: 3.0
+warmupMomentum: 0.8
+warmupBias: 0.1
+boxGain: 7.5
+clsGain: 0.5
+dflGain: 1.5
+
+# Data Configuration
+datasetName: "marsDataset"
+augmentation: True
+
+# EMA Configuration - 蒸馏模式也支持EMA
+useEMA: True
+emaDecay: 0.9999
+emaWarmupEpochs: 3
+
+# Distillation Configuration
+distillation:
+  teacher_weights: "auto"  # 自动从teacher训练结果加载
+  loss_weights:
+    distil: 1.0      # 蒸馏损失权重
+    cls_distil: 0.05 # 分类蒸馏损失权重
+    box_distil: 0.001 # 回归蒸馏损失权重
+
+# Swin-Transformer specific configs
+swin:
+  embed_dim: 96      # 基础embedding维度
+  depths: [2, 2, 6, 2]  # 每个stage的block数量
+  num_heads: [3, 6, 12, 24]  # 每个stage的注意力头数
+  window_size: 7     # 窗口大小
+  drop_path_rate: 0.1  # stochastic depth率
+  
+# Output Configuration - 独立保存目录
+outputPath: "runs/swin_transformer_distillation"
+modelSaveName: "swin_distil_model"
+saveWeights: True
+saveBest: True
+
+# Backbone Configuration
+backboneUrl: null  # Swin不使用YOLO预训练权重
+
+# Loss Configuration
+lossWeights:
+  box: 7.5
+  cls: 0.5
+  dfl: 1.5 

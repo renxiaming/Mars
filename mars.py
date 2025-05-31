@@ -17,12 +17,22 @@ if __name__ == "__main__":
         elif arg == "-pipe":
             mode = "pipe"
 
+    # 🎯 配置选择 - 选择你要运行的配置
+    
+    # === 原始YOLO配置 ===
+    # cfgname = "c1.nano.full"             # 原始YOLO完整训练
+    # cfgname = "c1.nano.teacher"          # 原始YOLO教师模式
+    # cfgname = "c1.nano.full.ema"         # 原始YOLO + EMA
+    # cfgname = "c1.nano.distillation"     # 原始YOLO蒸馏
+    
+    # === 🆕 Swin-Transformer配置 ===
+    cfgname = "c1.nano.swin.full"          # Swin-Transformer完整训练
+    # cfgname = "c1.nano.swin.teacher"     # Swin-Transformer教师模式
+    # cfgname = "c1.nano.swin.distillation" # Swin-Transformer蒸馏
+
     MarsEngine(
         mode=mode,
-        cfgname="c1.nano.full.ema",  # 从full配置开始，添加EMA功能进行对比
-        # cfgname="c1.nano.full.cuda@3",
-        # cfgname="c1.nano.teacher.ema",
-        # cfgname="c1.nano.distillation",
+        cfgname=cfgname,
         root="C:/Mars_Output", # 修改为你的Windows系统路径，用于保存训练结果
         nobuf=nobuf,
     ).run()
