@@ -54,10 +54,21 @@ def mcfg(tags):
             mcfg.checkpointModelFile = f"C:/Mars_Output/{username}/c1.nano.swin.teacher/__cache__/best_weights.pth"
             mcfg.teacherModelFile = f"C:/Mars_Output/{username}/c1.nano.swin.teacher/__cache__/best_weights.pth"
         else:
-            # 原始蒸馏模式
+            # 原始蒸馏模式 - 使用EMA权重
             mcfg.modelName = "distillation"
-            mcfg.checkpointModelFile = f"C:/Mars_Output/{username}/c1.nano.teacher/__cache__/best_weights.pth"
-            mcfg.teacherModelFile = f"C:/Mars_Output/{username}/c1.nano.teacher/__cache__/best_weights.pth"
+            # 优先使用EMA权重，如果不存在则使用常规权重
+            ema_weights_path = f"C:/Mars_Output/{username}/c1.nano.teacher/__cache__/ema_best_weights.pth"
+            regular_weights_path = f"C:/Mars_Output/{username}/c1.nano.teacher/__cache__/best_weights.pth"
+            
+            # 检查EMA权重是否存在
+            if os.path.exists(ema_weights_path):
+                mcfg.checkpointModelFile = ema_weights_path
+                mcfg.teacherModelFile = ema_weights_path
+                print(f"🎯 使用EMA teacher权重: {ema_weights_path}")
+            else:
+                mcfg.checkpointModelFile = regular_weights_path
+                mcfg.teacherModelFile = regular_weights_path
+                print(f"⚠️  EMA权重不存在，使用常规权重: {regular_weights_path}")
             
         mcfg.distilLossWeights = (1.0, 0.05, 0.001)
         mcfg.maxEpoch = 100
@@ -65,5 +76,33 @@ def mcfg(tags):
         mcfg.epochValidation = False # DO NOT MODIFY
         mcfg.trainSplitName = "small" # DO NOT MODIFY
         mcfg.teacherClassIndexes = [x for x in range(0, 10)] # DO NOT MODIFY
+
+    # EMA配置支持
+    if "ema" in tags:
+        mcfg.useEMA = True
+        mcfg.emaDecay = 0.9999  # 更高的衰减系数，更稳定
+        mcfg.emaWarmupEpochs = 3  # EMA预热期
+        # 确保保存EMA权重
+        mcfg.epochValidation = True  # 需要验证才能保存最佳权重
+        
+        # 如果是distillation.ema，强制使用EMA teacher权重
+        if "distillation" in tags and not "swin" in tags:
+            username = os.environ.get('USERNAME') or os.environ.get('USER', 'root')
+            # 使用专门的EMA teacher目录
+            ema_teacher_weights = f"C:/Mars_Output/{username}/c1.nano.teacher.ema/__cache__/best_weights.pth"
+            fallback_ema_weights = f"C:/Mars_Output/{username}/c1.nano.teacher/__cache__/ema_best_weights.pth"
+            
+            if os.path.exists(ema_teacher_weights):
+                mcfg.checkpointModelFile = ema_teacher_weights
+                mcfg.teacherModelFile = ema_teacher_weights
+                print(f"🎯 EMA蒸馏模式：使用EMA teacher目录权重: {ema_teacher_weights}")
+            elif os.path.exists(fallback_ema_weights):
+                mcfg.checkpointModelFile = fallback_ema_weights
+                mcfg.teacherModelFile = fallback_ema_weights
+                print(f"🎯 EMA蒸馏模式：使用EMA权重文件: {fallback_ema_weights}")
+            else:
+                print(f"❌ 错误：EMA蒸馏需要EMA teacher权重，但以下文件都不存在:")
+                print(f"   - {ema_teacher_weights}")
+                print(f"   - {fallback_ema_weights}")
 
     return mcfg

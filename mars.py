@@ -23,10 +23,10 @@ if __name__ == "__main__":
     # cfgname = "c1.nano.full"             # 原始YOLO完整训练
     # cfgname = "c1.nano.teacher"          # 原始YOLO教师模式
     # cfgname = "c1.nano.full.ema"         # 原始YOLO + EMA
-    # cfgname = "c1.nano.distillation"     # 原始YOLO蒸馏
+    cfgname = "c1.nano.distillation.ema" # 原始YOLO蒸馏 + EMA增强
     
     # === 🆕 Swin-Transformer配置 ===
-    cfgname = "c1.nano.swin.full"          # Swin-Transformer完整训练
+    # cfgname = "c1.nano.swin.full"          # Swin-Transformer完整训练
     # cfgname = "c1.nano.swin.teacher"     # Swin-Transformer教师模式
     # cfgname = "c1.nano.swin.distillation" # Swin-Transformer蒸馏
 
