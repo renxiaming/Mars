@@ -45,20 +45,25 @@ def mcfg(tags):
         mcfg.trainSelectedClasses = ["A{}".format(x) for x in range(1, 11)] # DO NOT MODIFY
 
     if "distillation" in tags:
-        # 动态获取用户名，兼容Windows和Linux
         username = os.environ.get('USERNAME') or os.environ.get('USER', 'root')
+        
+        # 动态适配Windows和Linux路径
+        if os.name == 'nt':  # Windows
+            base_path = f"C:/Mars_Output/{username}"
+        else:  # Linux
+            base_path = f"/root/basictask/Mars/Mars_Output/{username}"
         
         if "swin" in tags:
             # Swin-Transformer蒸馏模式
             mcfg.modelName = "swin"  # 学生模型也用Swin
-            mcfg.checkpointModelFile = f"C:/Mars_Output/{username}/c1.nano.swin.teacher/__cache__/best_weights.pth"
-            mcfg.teacherModelFile = f"C:/Mars_Output/{username}/c1.nano.swin.teacher/__cache__/best_weights.pth"
+            mcfg.checkpointModelFile = f"{base_path}/c1.nano.swin.teacher/__cache__/best_weights.pth"
+            mcfg.teacherModelFile = f"{base_path}/c1.nano.swin.teacher/__cache__/best_weights.pth"
         else:
             # 原始蒸馏模式 - 使用EMA权重
             mcfg.modelName = "distillation"
             # 优先使用EMA权重，如果不存在则使用常规权重
-            ema_weights_path = f"C:/Mars_Output/{username}/c1.nano.teacher/__cache__/ema_best_weights.pth"
-            regular_weights_path = f"C:/Mars_Output/{username}/c1.nano.teacher/__cache__/best_weights.pth"
+            ema_weights_path = f"{base_path}/c1.nano.teacher/__cache__/ema_best_weights.pth"
+            regular_weights_path = f"{base_path}/c1.nano.teacher/__cache__/best_weights.pth"
             
             # 检查EMA权重是否存在
             if os.path.exists(ema_weights_path):
@@ -73,7 +78,7 @@ def mcfg(tags):
         mcfg.distilLossWeights = (1.0, 0.05, 0.001)
         mcfg.maxEpoch = 100
         mcfg.backboneFreezeEpochs = [x for x in range(0, 25)]
-        mcfg.epochValidation = False # DO NOT MODIFY
+        mcfg.epochValidation = False # DO NOT MODIFY - 蒸馏模式不能验证
         mcfg.trainSplitName = "small" # DO NOT MODIFY
         mcfg.teacherClassIndexes = [x for x in range(0, 10)] # DO NOT MODIFY
 
@@ -82,27 +87,24 @@ def mcfg(tags):
         mcfg.useEMA = True
         mcfg.emaDecay = 0.9999  # 更高的衰减系数，更稳定
         mcfg.emaWarmupEpochs = 3  # EMA预热期
-        # 确保保存EMA权重
-        mcfg.epochValidation = True  # 需要验证才能保存最佳权重
         
-        # 如果是distillation.ema，强制使用EMA teacher权重
+        # 关键修复：只有非蒸馏模式才启用验证
+        if "distillation" not in tags:
+            mcfg.epochValidation = True
+        
+        # EMA蒸馏特殊处理
         if "distillation" in tags and not "swin" in tags:
             username = os.environ.get('USERNAME') or os.environ.get('USER', 'root')
-            # 使用专门的EMA teacher目录
-            ema_teacher_weights = f"C:/Mars_Output/{username}/c1.nano.teacher.ema/__cache__/best_weights.pth"
-            fallback_ema_weights = f"C:/Mars_Output/{username}/c1.nano.teacher/__cache__/ema_best_weights.pth"
+            
+            # 动态适配Windows和Linux路径
+            if os.name == 'nt':  # Windows
+                ema_teacher_weights = f"C:/Mars_Output/{username}/c1.nano.teacher.ema/__cache__/best_weights.pth"
+            else:  # Linux
+                ema_teacher_weights = f"/root/basictask/Mars/Mars_Output/{username}/c1.nano.teacher.ema/__cache__/best_weights.pth"
             
             if os.path.exists(ema_teacher_weights):
                 mcfg.checkpointModelFile = ema_teacher_weights
                 mcfg.teacherModelFile = ema_teacher_weights
-                print(f"🎯 EMA蒸馏模式：使用EMA teacher目录权重: {ema_teacher_weights}")
-            elif os.path.exists(fallback_ema_weights):
-                mcfg.checkpointModelFile = fallback_ema_weights
-                mcfg.teacherModelFile = fallback_ema_weights
-                print(f"🎯 EMA蒸馏模式：使用EMA权重文件: {fallback_ema_weights}")
-            else:
-                print(f"❌ 错误：EMA蒸馏需要EMA teacher权重，但以下文件都不存在:")
-                print(f"   - {ema_teacher_weights}")
-                print(f"   - {fallback_ema_weights}")
+                print(f"🎯 EMA蒸馏模式：使用EMA teacher权重: {ema_teacher_weights}")
 
     return mcfg
