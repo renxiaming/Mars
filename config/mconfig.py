@@ -49,6 +49,11 @@ class ModelConfig(object):
         self.trainSelectedClasses = None
         self.distilSelectedClasses = None
         self.checkpointModelFile = None
+        
+        # EMA setup
+        self.useEMA = True  # 启用EMA
+        self.emaDecay = 0.9999  # EMA衰减系数
+        self.emaWarmupEpochs = 3  # EMA预热epoch数
 
         # eval setup
         self.testSelectedClasses = None
@@ -163,3 +168,9 @@ class ModelConfig(object):
 
     def epochInfoPath(self):
         return os.path.join(self.cacheDir(), "info.txt")
+
+    def emaBestWeightsPath(self):
+        return os.path.join(self.cacheDir(), "ema_best_weights.pth")
+
+    def emaCachePath(self):
+        return os.path.join(self.cacheDir(), "ema_last_epoch_weights.pth")

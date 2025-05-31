@@ -19,9 +19,9 @@ if __name__ == "__main__":
 
     MarsEngine(
         mode=mode,
-        cfgname="c1.nano.full",
+        cfgname="c1.nano.full.ema",  # 从full配置开始，添加EMA功能进行对比
         # cfgname="c1.nano.full.cuda@3",
-        # cfgname="c1.nano.teacher",
+        # cfgname="c1.nano.teacher.ema",
         # cfgname="c1.nano.distillation",
         root="C:/Mars_Output", # 修改为你的Windows系统路径，用于保存训练结果
         nobuf=nobuf,

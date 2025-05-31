@@ -24,6 +24,9 @@ def mcfg(tags):
         "small": "archive/mar20/splits/v5/small.txt",
     }
 
+    # 启用预训练权重
+    mcfg.pretrainedBackboneUrl = "https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt"
+
     if "full" in tags:
         mcfg.modelName = "base"
         mcfg.maxEpoch = 200
@@ -36,9 +39,12 @@ def mcfg(tags):
         mcfg.trainSelectedClasses = ["A{}".format(x) for x in range(1, 11)] # DO NOT MODIFY
 
     if "distillation" in tags:
+        # 动态获取用户名，兼容Windows和Linux
+        username = os.environ.get('USERNAME') or os.environ.get('USER', 'root')
+        
         mcfg.modelName = "distillation"
-        mcfg.checkpointModelFile = "C:/Mars_Output/ame/c1.nano.teacher/__cache__/best_weights.pth"
-        mcfg.teacherModelFile = "C:/Mars_Output/ame/c1.nano.teacher/__cache__/best_weights.pth"
+        mcfg.checkpointModelFile = f"C:/Mars_Output/{username}/c1.nano.teacher/__cache__/best_weights.pth"
+        mcfg.teacherModelFile = f"C:/Mars_Output/{username}/c1.nano.teacher/__cache__/best_weights.pth"
         mcfg.distilLossWeights = (1.0, 0.05, 0.001)
         mcfg.maxEpoch = 100
         mcfg.backboneFreezeEpochs = [x for x in range(0, 25)]
